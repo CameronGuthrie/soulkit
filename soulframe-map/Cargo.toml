@@ -1,0 +1,22 @@
+[package]
+name = "soulframe-map"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Soulframe Midrath map extractor: map tiles and cache-derived POI JSON."
+
+[[bin]]
+name = "soulframe-map"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+chrono = { workspace = true }
+clap = { workspace = true }
+ddsfile = { workspace = true }
+image = { workspace = true }
+image_dds = { workspace = true }
+regex = { workspace = true }
+serde_json = { workspace = true }
+soulframe-cache = { workspace = true }
+soulframe-images = { path = "../soulframe-images" }

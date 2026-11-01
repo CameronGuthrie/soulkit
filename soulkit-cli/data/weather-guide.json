@@ -1,0 +1,97 @@
+{
+  "title": "Weatherways",
+  "title_lang": "/SF/Language/Guidebook/WeatherEffectsTutorialTitle",
+  "intro": "Midrath's skies turn on a fixed wheel, the same for every Envoy. Most hours run from fair to foul and back again, and a few of those turns leave something behind.",
+  "tiers": {
+    "clear": { "name": "Fair", "order": 1 },
+    "light": { "name": "Unsettled", "order": 2 },
+    "moderate": { "name": "Blustery", "order": 3 },
+    "heavy": { "name": "Stormy", "order": 4 }
+  },
+  "types": {
+    "clear.0": {
+      "name": "Clear Skies",
+      "epithet": "Mora's open hand",
+      "blurb": "Still air and not a cloud over Midrath. Good light for travel and for spotting what hides in the grass.",
+      "effects": []
+    },
+    "light.0": {
+      "name": "Fresh Breeze",
+      "epithet": "Alca stirring",
+      "blurb": "Clear skies with a steady wind through the trees. The fair spell is ending.",
+      "effects": []
+    },
+    "light.1": {
+      "name": "Thin Cloud",
+      "epithet": "A veil over the sun",
+      "blurb": "A faint haze and a light breeze. The sky is turning, slowly.",
+      "effects": []
+    },
+    "moderate.0": {
+      "name": "Gale",
+      "epithet": "The wind's full voice",
+      "blurb": "Hard, dry wind under a nearly clear sky. No rain comes of it.",
+      "effects": []
+    },
+    "moderate.1": {
+      "name": "Gathering Grey",
+      "epithet": "Clouds massing",
+      "blurb": "Half the sky is cloud and the wind is up. Rain is close but not falling.",
+      "effects": []
+    },
+    "moderate.2": {
+      "name": "Passing Showers",
+      "epithet": "Rain with light behind it",
+      "blurb": "Steady rain under broken cloud. When it clears, a rainbow may follow.",
+      "effects": [
+        { "id": "post_rain", "when": "after" },
+        { "id": "rainbow", "when": "after", "chance": 0.2 }
+      ]
+    },
+    "heavy.0": {
+      "name": "Downpour",
+      "epithet": "Midrath drowned",
+      "blurb": "A full grey sky, driving rain and wind. Take shelter, or press on soaked.",
+      "effects": [
+        { "id": "post_rain", "when": "after" }
+      ]
+    },
+    "heavy.1": {
+      "name": "Thunderstorm",
+      "epithet": "Lightning reigns",
+      "blurb": "Downpour with lightning crossing the sky. A Voltaic caster's hour.",
+      "effects": [
+        { "id": "lightning", "when": "during" },
+        { "id": "post_rain", "when": "after" }
+      ]
+    }
+  },
+  "effects": {
+    "lightning": {
+      "name": "Lightning Storm",
+      "lang": "/SF/Language/Codex/WeatherEffectsLightningMemory",
+      "source": "/SF/Upgrades/Mods/Aura/Weather/LightningAuraUpgrade",
+      "status": "confirmed_trigger"
+    },
+    "post_rain": {
+      "name": "After the Rain",
+      "lang": "/SF/Language/Codex/WeatherEffectsPostRainMemory",
+      "source": "/SF/Upgrades/Mods/Aura/Weather/PostRainAuraUpgrade",
+      "status": "trigger_inferred",
+      "note": "Applies once a rain type ends; the buff's duration is not traced yet."
+    },
+    "rainbow": {
+      "name": "Rainbow",
+      "lang": "/SF/Language/Codex/WeatherEffectsRainbowMemory",
+      "source": "/SF/Upgrades/Mods/Aura/Weather/RainbowAuraUpgrade",
+      "status": "chance_only",
+      "note": "Only after Passing Showers (20%). The roll depends on the sky's recent-rain state and is not predicted."
+    },
+    "fog": {
+      "name": "Fog",
+      "lang": "/SF/Language/Codex/WeatherEffectsFogMemory",
+      "status": "untraced",
+      "note": "No weather preset carries fog directly; probably tied to overcast. Not shown in forecasts until traced."
+    }
+  }
+}

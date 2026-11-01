@@ -1,0 +1,149 @@
+name: Build and release Soulkit
+
+on:
+  push:
+    branches: [main, public]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/public'
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      channel: ${{ steps.version.outputs.channel }}
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Check out source without game data or submodules
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+          submodules: false
+
+      - name: Install Rust stable
+        run: |
+          rustup toolchain install stable --profile minimal
+          if ($LASTEXITCODE -ne 0) { throw 'Rust installation failed.' }
+          rustup default stable
+          if ($LASTEXITCODE -ne 0) { throw 'Could not select Rust stable.' }
+
+      - name: Set branch build version
+        id: version
+        env:
+          RELEASE_CHANNEL: ${{ github.ref_name }}
+        run: |
+          ./soulkit/set-version.ps1 -Check
+          $metadata = cargo metadata --format-version 1 --no-deps --locked | ConvertFrom-Json
+          if ($LASTEXITCODE -ne 0) { throw 'Could not read the application version.' }
+          $baseVersion = ($metadata.packages | Where-Object name -EQ 'soulkit').version
+          if ($baseVersion -notmatch '^\d+\.\d+\.\d+$') { throw 'Commit a stable base version before releasing.' }
+          $version = "$baseVersion-$env:RELEASE_CHANNEL.$env:GITHUB_RUN_NUMBER"
+          ./soulkit/set-version.ps1 -Version $version
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "channel=$env:RELEASE_CHANNEL" >> $env:GITHUB_OUTPUT
+
+      - name: Run Rust tests
+        run: |
+          cargo test --workspace --release --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Rust tests failed.' }
+
+      - name: Run UI regression tests
+        run: |
+          foreach ($test in @('settings-ui', 'errors-ui', 'cache-browser-ui')) {
+            node "soulkit/tests/$test.cjs"
+            if ($LASTEXITCODE -ne 0) { throw "UI test failed: $test" }
+          }
+
+      - name: Build the GUI and embedded extraction engine
+        run: |
+          cargo build --release --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Soulkit release build failed.' }
+
+      - name: Package application without DLLs
+        env:
+          RELEASE_CHANNEL: ${{ steps.version.outputs.channel }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: ./.github/scripts/package-release.ps1 -Channel $env:RELEASE_CHANNEL -CommitSha $env:SOURCE_SHA
+
+      - name: Check checksum with Git Bash
+        shell: bash
+        working-directory: dist/releases
+        run: sha256sum --check SHA256SUMS.txt
+
+      - name: Save release files
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: soulkit-release
+          path: |
+            dist/releases/Soulkit-*-windows-x64.zip
+            dist/releases/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RELEASE_VERSION: ${{ needs.build.outputs.version }}
+      RELEASE_CHANNEL: ${{ needs.build.outputs.channel }}
+      SOURCE_SHA: ${{ github.sha }}
+    steps:
+      - name: Download checked release files
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: soulkit-release
+          path: release-files
+
+      - name: Publish branch prerelease
+        shell: bash
+        working-directory: release-files
+        run: |
+          set -euo pipefail
+          sha256sum --check SHA256SUMS.txt
+          tag="v${RELEASE_VERSION}"
+          channel_name="Full"
+          if [[ "$RELEASE_CHANNEL" == "public" ]]; then channel_name="Public"; fi
+          printf '%s\n' \
+            "Soulkit ${channel_name} build from \`${RELEASE_CHANNEL}\` at commit \`${SOURCE_SHA}\`." \
+            '' \
+            'Download the Windows x64 ZIP and extract it before opening soulkit.exe.' \
+            'DLL files are not included. Supply your own compatible runtime DLLs; see SETUP.md in the ZIP.' \
+            'Microsoft Edge WebView2 and the Microsoft Visual C++ x64 runtime are also required.' \
+            '' \
+            'SHA256SUMS.txt contains the archive checksum. BUILD-INFO.json in the ZIP records the version and source commit.' \
+            > release-notes.md
+
+          # A rerun can finish a draft interrupted during upload. Published
+          # releases remain unchanged and always refer to the original commit.
+          if gh release view "$tag" --json isDraft,targetCommitish > existing-release.json 2>/dev/null; then
+            test "$(jq -r .targetCommitish existing-release.json)" = "$SOURCE_SHA"
+            if [[ "$(jq -r .isDraft existing-release.json)" == "false" ]]; then
+              echo "Release $tag is already published."
+              exit 0
+            fi
+          else
+            # Avoid adopting a pre-existing tag pointing at different source.
+            if tag_sha=$(gh api "repos/$GH_REPO/commits/$tag" --jq .sha 2>/dev/null); then
+              test "$tag_sha" = "$SOURCE_SHA"
+            fi
+            gh release create "$tag" --target "$SOURCE_SHA" \
+              --title "Soulkit ${channel_name} ${RELEASE_VERSION}" \
+              --notes-file release-notes.md --draft --prerelease --latest=false
+          fi
+          gh release upload "$tag" "Soulkit-${RELEASE_VERSION}-windows-x64.zip" SHA256SUMS.txt --clobber
+          gh release edit "$tag" --draft=false --prerelease --latest=false
+          echo "Release: https://github.com/$GH_REPO/releases/tag/$tag" >> "$GITHUB_STEP_SUMMARY"

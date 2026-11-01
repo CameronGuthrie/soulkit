@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Soulkit</title>
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <script src="cache-browser.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Soulkit home">
+        <span class="brand-mark"><img src="icon.svg" alt="" aria-hidden="true" width="40" height="40"></span>
+        <span><strong>SOULKIT</strong><small>THE SOULFRAME TOOLBOX</small></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="primary-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-page="extract"><i data-icon="layers"></i><span>Extract</span></button>
+        <button class="nav-item" data-page="cache"><i data-icon="harddrive"></i><span>Game cache</span></button>
+        <button class="nav-item" data-page="library"><i data-icon="folder"></i><span>File library</span><span id="nav-file-count" class="nav-count"></span></button>
+        <button class="nav-item" data-page="activity"><i data-icon="activity"></i><span>Activity</span><span id="activity-indicator" class="activity-dot" hidden></span></button>
+        <button class="nav-item" data-page="settings"><i data-icon="settings"></i><span>Settings</span></button>
+      </nav>
+      <div id="library-shortcuts" class="library-shortcuts" hidden>
+        <div class="nav-label">COLLECTIONS</div>
+        <button data-folder="images"><i data-icon="image"></i>Images</button>
+        <button data-folder="audio"><i data-icon="headphones"></i>Audio</button>
+        <button data-folder="maps"><i data-icon="map"></i>Maps</button>
+        <button data-folder="Languages"><i data-icon="languages"></i>Languages</button>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="workspace-card">
+          <div class="workspace-card-title"><i data-icon="harddrive"></i><span>Local workspace</span><span class="local-dot"></span></div>
+          <div id="workspace-name" class="workspace-name">Connecting…</div>
+          <button id="workspace-settings" class="workspace-link">Manage workspace <i data-icon="arrow-right"></i></button>
+        </div>
+        <div class="sidebar-footer"><span id="app-version">v0.1.0</span></div>
+      </div>
+    </aside>
+    <div class="main-shell">
+      <header class="topbar">
+        <div class="topbar-crumb"><span>Workspace</span><i data-icon="chevron-right"></i><strong id="page-title">Extract</strong></div>
+        <div class="topbar-actions"><button id="top-open-output" class="text-button"><i data-icon="folder-open"></i>Open output folder</button><span class="topbar-divider"></span><span id="global-status" class="status-pill"><span class="status-dot"></span>Ready</span></div>
+      </header>
+      <main>
+        <section id="page-extract" class="page extract-page">
+          <div class="page-heading"><div><h1>Extract</h1><p>Select which tools to run.</p></div><div class="extract-heading-actions"><button class="button secondary" data-page="cache"><i data-icon="search"></i>Browse game cache</button><div id="game-status" class="game-status"><span class="status-dot"></span><span>Checking installation</span></div></div></div>
+          <section id="extract-failure" class="run-failure" role="alert" hidden><span class="run-failure-icon"><i data-icon="alert"></i></span><div class="run-failure-copy"><h2 id="extract-failure-title"></h2><p id="extract-failure-message"></p><p id="extract-failure-suggestion" class="failure-suggestion"></p><button id="extract-failure-action" class="button secondary" hidden></button><details id="extract-failure-details" class="failure-details" hidden><summary>Technical details</summary><pre id="extract-failure-details-text"></pre></details></div></section>
+          <div class="extract-layout">
+            <div class="tool-section">
+              <div class="section-toolbar"><div class="preset-tabs" aria-label="Selection presets"><button data-preset="custom" class="active">Custom</button><button data-preset="media">Media</button><button data-preset="data">Game data</button><button data-preset="all">Everything</button></div><button id="clear-selection" class="text-button subtle">Clear selection</button></div>
+              <div id="tool-grid" class="tool-grid"></div>
+            </div>
+            <aside class="run-summary">
+              <div class="summary-top"><h2>Selected tools</h2></div>
+              <div class="summary-selection"><div><strong id="selection-count">3</strong><span>tools selected</span></div><span id="selection-badge" class="selection-badge">Custom run</span></div>
+              <div id="selected-tools" class="selected-tools"></div>
+              <div id="dependency-note" class="dependency-note" hidden></div>
+              <div class="summary-output"><div class="small-label"><i data-icon="folder-open"></i>OUTPUT DIRECTORY</div><button id="summary-output" class="output-path" title="Change output folder">output/</button></div>
+              <label class="compact-check"><input id="keep-intermediates" type="checkbox"><span>Keep temporary files</span><i data-icon="info" title="By default, temporary files are cleaned after a successful full run."></i></label>
+              <button id="run-button" class="button primary run-button"><i data-icon="play"></i><span>Run selected tools</span><i data-icon="arrow-right"></i></button>
+              <div id="plan-status" class="plan-status">Choose at least one tool to begin.</div>
+            </aside>
+          </div>
+          <div id="extraction-progress" class="extraction-progress" hidden><div class="run-progress-heading"><span class="running-orb"></span><strong id="extraction-progress-label">Preparing extraction</strong><span id="extraction-progress-value"></span><button id="extract-cancel" class="text-button danger"><i data-icon="square"></i>Stop</button><button class="text-button" data-page="activity">View activity<i data-icon="arrow-right"></i></button></div><div class="progress-track"><div id="extraction-progress-bar"></div></div><div id="latest-log" class="latest-log"></div></div>
+        </section>
+        <section id="page-cache" class="page cache-page" hidden>
+          <div class="page-heading"><div><h1>Game cache</h1><p>Browse images, audio and models, then choose exactly what to extract.</p></div><button id="cache-refresh" class="button secondary" title="Read the cache indexes again and clear the current selection."><i data-icon="refresh"></i>Rescan cache</button></div>
+          <div class="cache-source"><span id="cache-source-path">Uses the game cache selected in Settings.</span><button id="cache-settings" class="text-button">Choose cache folder<i data-icon="arrow-right"></i></button></div>
+          <div class="cache-toolbar"><div class="search-box"><i data-icon="search"></i><input id="cache-search" type="search" placeholder="Search this folder and its subfolders…" aria-label="Search game cache"></div><select id="cache-kind" aria-label="Cache media type"><option value="all">All media</option><option value="images">Images</option><option value="audio">Audio</option><option value="models">Models</option></select></div>
+          <div id="cache-error" class="cache-error" role="alert" hidden><i data-icon="alert"></i><span id="cache-error-message"></span><button id="cache-error-settings" class="text-button">Open settings</button></div>
+          <div class="cache-body"><div class="cache-files"><div class="file-navigation"><button id="cache-up" class="icon-button" aria-label="Parent cache folder"><i data-icon="arrow-left"></i></button><div id="cache-breadcrumbs" class="breadcrumbs"></div></div><div class="cache-scope-actions"><button id="cache-select-scope" class="text-button">Select folder contents</button><button id="cache-select-all" class="text-button">Select whole game</button><span id="cache-result-count"></span></div><div id="cache-loading" class="cache-loading" hidden><span class="spinner"></span><span id="cache-loading-label">Reading cache indexes…</span><button id="cache-cancel-loading" class="text-button">Stop loading</button></div><div id="cache-rows" class="cache-rows" aria-label="Game cache files" aria-busy="false"></div><div id="cache-empty" class="cache-empty"><i data-icon="harddrive"></i><p id="cache-empty-text">Open the cache index to browse images, audio and models.</p><button id="cache-scan" class="button secondary"><i data-icon="scan"></i>Browse cache</button></div><div class="cache-pagination"><button id="cache-previous" class="button secondary"><i data-icon="arrow-left"></i>Previous</button><span id="cache-page-count"></span><button id="cache-next" class="button secondary">Next<i data-icon="arrow-right"></i></button></div></div>
+            <aside class="cache-inspector"><div id="cache-preview-empty" class="inspector-empty"><i data-icon="scan"></i><h3>Preview an asset</h3><p>Choose a file to decode a preview.<br>Use its checkbox to add it to your extraction.</p></div><div id="cache-preview-content" hidden><div class="inspector-top"><span class="eyebrow">CACHE PREVIEW</span><button id="cache-close-preview" class="icon-button" aria-label="Close cache preview"><i data-icon="x"></i></button></div><div id="cache-preview-stage" class="preview-stage"></div><div class="file-information"><span id="cache-preview-kind" class="file-kind-badge"></span><h3 id="cache-preview-name"></h3><div id="cache-preview-path" class="file-relative"></div><div class="metadata-row"><span>Stored in cache</span><strong id="cache-preview-size"></strong></div><p id="cache-preview-notice" class="cache-preview-note">Previews use temporary app storage. Extract to keep this asset in your output folder.</p><button id="cache-preview-select" class="button secondary"><i data-icon="check"></i>Add to selection</button></div></div></aside>
+          </div>
+          <div class="cache-selection-bar"><div class="cache-selection-copy"><strong id="cache-selection-count" aria-live="polite">Nothing selected</strong><span id="cache-selection-detail">Images → output/images · Audio → output/audio · Models → output/models</span><button id="cache-clear-selection" class="text-button">Clear selection</button></div><label class="cache-image-format">Image format<select id="cache-image-format" aria-describedby="cache-format-help"><option value="png">PNG</option><option value="dds">DDS</option></select></label><button id="cache-extract" class="button primary"><i data-icon="play"></i>Extract selected</button></div>
+          <p id="cache-format-help" class="cache-format-help">PNG and DDS apply to supported images. Native textures are saved as original cache parts.</p>
+          <div id="cache-run-status" class="cache-run-status" hidden><div><strong id="cache-run-title"></strong><p id="cache-run-description"></p></div><button id="cache-run-cancel" class="text-button danger"><i data-icon="square"></i>Stop</button><button class="button secondary" data-page="activity">View activity<i data-icon="arrow-right"></i></button></div>
+        </section>
+        <section id="page-library" class="page library-page" hidden>
+          <div class="page-heading"><div><h1>File library</h1><p id="library-subtitle">Extracted files</p></div><div class="heading-actions"><button id="refresh-library" class="button secondary"><i data-icon="refresh"></i>Refresh</button><button id="library-open-output" class="button secondary"><i data-icon="external"></i>Open folder</button></div></div>
+          <div class="library-toolbar"><div class="search-box"><i data-icon="search"></i><input id="file-search" type="search" placeholder="Search all extracted files…" aria-label="Search extracted files"><span class="search-shortcut">Ctrl K</span></div><select id="file-sort" aria-label="Sort files"><option value="name">Name: A–Z</option><option value="newest">Newest first</option><option value="size">Largest first</option></select><div class="view-toggle"><button id="grid-view" class="active" aria-label="Grid view"><i data-icon="grid"></i></button><button id="list-view" aria-label="List view"><i data-icon="list"></i></button></div></div>
+          <div class="library-count-row"><span id="visible-file-count" class="file-count"></span></div>
+          <div class="library-body"><div class="file-area"><div class="file-navigation"><button id="folder-up" class="icon-button" aria-label="Parent folder"><i data-icon="arrow-left"></i></button><div id="breadcrumbs" class="breadcrumbs"></div></div><div id="file-loading" class="file-loading" hidden><span class="spinner"></span>Loading your collection…</div><div id="file-grid" class="file-grid"></div><div id="library-empty" class="empty-state" hidden><span class="empty-icon"><i data-icon="folder-open"></i></span><h2>No files here yet</h2><p>Run an extraction and your files will appear here.</p><button class="button secondary" data-page="extract">Choose tools<i data-icon="arrow-right"></i></button></div><div id="search-limit" class="search-limit" hidden>Showing the first 1,000 matches. Refine your search to find more.</div></div>
+          <aside id="file-inspector" class="file-inspector"><div id="inspector-empty" class="inspector-empty"><i data-icon="scan"></i><h3>A closer look</h3><p>Select a file to preview it<br>and see the details.</p><div class="preview-types"><i data-icon="image"></i><i data-icon="headphones"></i><i data-icon="code"></i></div></div><div id="inspector-content" hidden><div class="inspector-top"><span class="eyebrow">FILE PREVIEW</span><button id="close-preview" class="icon-button" aria-label="Close preview"><i data-icon="x"></i></button></div><div id="preview-stage" class="preview-stage"></div><div class="file-information"><span id="preview-kind" class="file-kind-badge"></span><h3 id="preview-name"></h3><div id="preview-relative" class="file-relative"></div><div class="metadata-row"><span>File size</span><strong id="preview-size"></strong></div><div class="metadata-row"><span>Modified</span><strong id="preview-modified"></strong></div><div id="preview-notice" class="preview-notice" hidden></div><div class="inspector-actions"><button id="open-selected" class="button primary"><i data-icon="external"></i>Open file</button><button id="reveal-selected" class="button secondary"><i data-icon="folder-open"></i>Show in folder</button></div></div></div></aside></div>
+        </section>
+        <section id="page-activity" class="page activity-page" hidden>
+          <div class="page-heading"><div><h1>Activity</h1></div><button id="activity-cancel" class="button secondary danger" hidden><i data-icon="square"></i>Stop extraction</button></div>
+          <div id="activity-overview" class="activity-overview" hidden><div id="activity-symbol" class="activity-icon"><i data-icon="activity"></i></div><div class="activity-copy"><span id="activity-status-label" class="eyebrow"></span><h2 id="activity-title"></h2><p id="activity-description"></p><p id="activity-failure-suggestion" class="failure-suggestion" hidden></p><button id="activity-failure-action" class="button secondary" hidden></button><details id="activity-failure-details" class="failure-details" hidden><summary>Technical details</summary><pre id="activity-failure-details-text"></pre></details></div><span id="activity-progress-value"></span></div>
+          <div id="activity-progress-track" class="progress-track activity-progress-track" hidden><div id="activity-progress-bar"></div></div>
+          <div id="job-list" class="job-list"></div>
+          <div class="console-panel"><div class="console-toolbar"><div><span class="console-dot"></span><strong>Run output</strong><span id="log-count">0 lines</span></div><div><label class="compact-check"><input id="follow-log" type="checkbox" checked><span>Follow output</span></label><button id="copy-log" class="text-button"><i data-icon="copy"></i>Copy report</button></div></div><pre id="run-log" class="run-log">No runs yet.</pre></div>
+        </section>
+        <section id="page-settings" class="page settings-page" hidden>
+          <div class="page-heading settings-heading"><div><h1>Settings</h1><span id="settings-unsaved" class="settings-unsaved" hidden>Unsaved changes</span></div><button id="save-settings" class="button primary"><i data-icon="check"></i><span id="save-settings-label">Save changes</span></button></div>
+          <div class="settings-layout"><div class="settings-main">
+            <section class="settings-card"><div class="settings-card-heading"><span class="settings-icon"><i data-icon="sliders"></i></span><div><h2>Appearance</h2></div></div>
+              <fieldset class="theme-options"><legend>Theme</legend><label class="theme-option"><input type="radio" name="theme" value="light"><span class="theme-swatch light-swatch"><span></span></span><strong>Light</strong></label><label class="theme-option"><input type="radio" name="theme" value="dark"><span class="theme-swatch dark-swatch"><span></span></span><strong>Dark</strong></label></fieldset>
+            </section>
+            <section class="settings-card"><div class="settings-card-heading"><span class="settings-icon"><i data-icon="folder-open"></i></span><div><h2>Workspace & output</h2></div></div>
+              <label class="field-label" for="setting-workspace">Workspace folder</label><div class="path-field"><input id="setting-workspace" type="text" spellcheck="false"><button data-browse="workspace" class="icon-button" aria-label="Choose workspace"><i data-icon="folder-open"></i></button></div><p class="field-help">The working folder used during extraction.</p>
+              <label class="field-label" for="setting-output">Output folder</label><div class="path-field"><input id="setting-output" type="text" spellcheck="false"><button data-browse="output" class="icon-button" aria-label="Choose output folder"><i data-icon="folder-open"></i></button></div><p class="field-help">Extracted files and the library are read from this directory.</p>
+              <div class="storage-heading"><h3>Available storage</h3><button id="refresh-storage" class="text-button"><i data-icon="refresh"></i>Check space</button></div><div class="storage-space" aria-live="polite"><div class="storage-row"><div><strong>Output</strong><span id="output-storage-path"></span></div><span id="output-storage-free">Checking…</span></div><div class="storage-row"><div><strong>Temporary files</strong><span id="scratch-storage-path"></span></div><span id="scratch-storage-free">Checking…</span></div></div><p class="field-help">Temporary files use the workspace drive. Required space varies with the selected tools.</p><p id="storage-feedback" class="runtime-error" hidden></p>
+            </section>
+            <section class="settings-card runtime-card"><div class="settings-card-heading"><span class="settings-icon"><i data-icon="harddrive"></i></span><div><h2>Runtime DLLs</h2></div><button id="check-runtime-libraries" class="text-button"><i data-icon="refresh"></i>Check files</button></div>
+              <label class="field-label" for="setting-dll-directory">DLL folder <span class="optional">Optional</span></label><div class="path-field"><input id="setting-dll-directory" type="text" placeholder="Use the folder containing soulkit.exe" spellcheck="false"><button data-browse="dll_directory" class="icon-button" aria-label="Choose DLL folder"><i data-icon="folder-open"></i></button></div>
+              <div class="runtime-folder-help"><p class="field-help">Leave blank to use the app folder.</p><button id="reset-dll-directory" class="text-button">Use app folder</button></div>
+              <p id="dll-unsaved" class="runtime-unsaved" hidden>Unsaved folder — choose Save changes to use it for extraction.</p>
+              <div class="runtime-summary"><strong id="dll-status-summary">Checking files…</strong><span id="dll-location"></span></div>
+              <div id="runtime-library-list" class="runtime-library-list" aria-live="polite"></div><p id="dll-feedback" class="runtime-error" hidden></p>
+            </section>
+            <section class="settings-card"><div class="settings-card-heading"><span class="settings-icon"><i data-icon="sliders"></i></span><div><h2>Extraction preferences</h2></div></div>
+              <label class="field-label" for="setting-cache">Game cache folder <span class="optional">Auto-detect when blank</span></label><div class="path-field"><input id="setting-cache" type="text" placeholder="Detect the Soulframe installation automatically" spellcheck="false"><button data-browse="cache_path" class="icon-button" aria-label="Choose game cache"><i data-icon="folder-open"></i></button></div><p class="field-help">Choose the installed game's Cache.Windows folder or its parent.</p><p id="cache-detection" class="cache-detection" aria-live="polite"></p>
+              <div class="field-label">Language packs</div><div id="locale-options" class="locale-options"></div><p class="field-help">Used when the Languages tool is selected.</p>
+              <label class="preference-row"><div><strong>Keep temporary files</strong><span>Retain intermediate files after a successful full run for debugging.</span></div><input id="setting-keep" type="checkbox" class="switch-input"></label>
+            </section>
+          </div></div>
+        </section>
+      </main>
+      <footer class="statusbar"><span><span class="local-dot"></span><span id="footer-status">Ready</span></span><span id="footer-output">output/</span></footer>
+    </div>
+  </div>
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+  <dialog id="unsaved-settings-dialog" class="settings-dialog" aria-labelledby="unsaved-settings-title" aria-describedby="unsaved-settings-description"><div class="settings-dialog-copy"><h2 id="unsaved-settings-title">Save your settings changes?</h2><p id="unsaved-settings-description">Your changes have not been saved.</p></div><div class="settings-dialog-actions"><button id="unsaved-settings-keep" class="button secondary">Keep editing</button><button id="unsaved-settings-discard" class="button secondary">Discard changes</button><button id="unsaved-settings-save" class="button primary">Save changes</button></div></dialog>
+  <div id="initial-loading" class="initial-loading"><span class="brand-mark"><img src="icon.svg" alt="" aria-hidden="true" width="72" height="72"></span><span>Opening your workspace…</span><span class="spinner"></span></div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+[package]
+name = "soulframe-images"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Soulframe image/texture extractor: H+B cache pairing, DDS reconstruction, deswizzle, optional PNG conversion."
+
+[[bin]]
+name = "soulframe-images"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+byteorder = { workspace = true }
+clap = { workspace = true }
+image = { workspace = true }
+image_dds = { workspace = true }
+ddsfile = { workspace = true }
+soulframe-cache = { workspace = true }

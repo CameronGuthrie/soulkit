@@ -1,0 +1,30 @@
+[package]
+name = "soulkit-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Unified Soulframe pipeline runner — umbrella over per-tool crates (languages, droptables, ...)."
+
+[[bin]]
+name = "soulkit-cli"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+regex = { workspace = true }
+chrono = { workspace = true }
+sha2 = { workspace = true }
+soulframe-cache = { workspace = true }
+soulframe-audio = { path = "../soulframe-audio" }
+soulframe-languages = { path = "../soulframe-languages" }
+soulframe-droptables = { path = "../soulframe-droptables" }
+soulframe-images = { path = "../soulframe-images" }
+soulframe-items = { path = "../soulframe-items" }
+soulframe-map = { path = "../soulframe-map" }
+soulframe-models = { path = "../soulframe-models" }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = ["Win32_System_Console"] }

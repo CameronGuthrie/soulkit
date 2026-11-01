@@ -1,0 +1,39 @@
+# Build artifacts
+/target
+/dist/
+**/target
+
+# Cargo lockfile is committed at the workspace root; individual crates' lockfiles ignored
+**/Cargo.lock.bak
+
+# Editor / OS
+.codex-logs/
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Generated exports belong to the local installation, not the public source tree.
+/output/
+
+# Captured Camellia decryption keys — never publish these.
+/keys/
+
+# Decrypted raw manifest .bin dumps — not for the public pipeline output.
+/decrypted_raw/
+
+# Local pipeline scratch dirs (languages download/extract, run-all workdir).
+/downloaded-data/
+/extracted-data/
+/workdir/
+/.soulkit-work/
+
+# Native DLLs are shipped with the Soulframe client / third parties.
+# Copy them manually into ./lib/ (workspace) or set SOULFRAME_OODLE_LIB / SOULFRAME_ZSTD_LIB.
+/lib/
+
+# Python/editor caches must never enter the source tree.
+__pycache__/
+*.py[cod]

@@ -1,0 +1,22 @@
+[package]
+name = "soulframe-languages"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+description = "Soulframe language pack downloader/extractor: CDN SHCC manifest chain + ZSTD dictionary decompression."
+
+[[bin]]
+name = "soulframe-languages"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+byteorder = { workspace = true }
+clap = { workspace = true }
+serde_json = { workspace = true }
+libloading = { workspace = true }
+soulframe-cache = { workspace = true }
+reqwest = { workspace = true }
+rand = { workspace = true }
+md-5 = { workspace = true }
+base64 = { workspace = true }

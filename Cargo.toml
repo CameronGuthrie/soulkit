@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+default-members = ["soulkit"]
+members = [
+    "soulframe-audio",
+    "soulframe-cache",
+    "soulframe-droptables",
+    "soulframe-images",
+    "soulframe-items",
+    "soulframe-languages",
+    "soulframe-map",
+    "soulframe-models",
+    "soulkit",
+    "soulkit-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-only"
+repository = "local"
+
+[workspace.dependencies]
+anyhow = "1.0"
+byteorder = "1.5"
+libloading = "0.8"
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+camellia = "0.1"
+cipher = "0.4"
+hex = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+rand = "0.8"
+md-5 = "0.10"
+base64 = "0.22"
+image = { version = "0.25", default-features = false, features = ["png", "webp"] }
+image_dds = "0.4"
+ddsfile = "0.5"
+regex = "1"
+sha2 = "0.10"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+soulframe-cache = { path = "soulframe-cache" }

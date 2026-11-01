@@ -1,0 +1,29 @@
+[package]
+name = "soulkit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Soulkit desktop extraction manager and output browser."
+
+[[bin]]
+name = "soulkit"
+path = "src/main.rs"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+tauri = { version = "=2.12.5", features = ["protocol-asset"] }
+rfd = "=0.16.0"
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+soulframe-cache = { workspace = true }
+soulframe-images = { path = "../soulframe-images" }
+soulframe-audio = { path = "../soulframe-audio" }
+soulframe-models = { path = "../soulframe-models" }
+soulkit-cli = { path = "../soulkit-cli" }
+
+[build-dependencies]
+tauri-build = "=2.7.4"
