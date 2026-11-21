@@ -87,8 +87,11 @@ soulkit-cli languages extract-from-cache --cache-dir C:/path/to/Cache.Windows --
 
 Map exports include level tiles, map JSON and dungeon room floor plans from
 navmeshes. `--packages <formatted_packages.json>` supplies localized map names.
-Standalone language commands keep their own output defaults; the full pipeline
-publishes language JSON under `output/Languages/`.
+
+Language downloads default to all 15 supported packs. Use `--locales` to select
+a subset, such as `zh,tc,th,uk` for Simplified Chinese, Traditional Chinese,
+Thai and Ukrainian. The full pipeline publishes `Languages_<locale>.json` under
+`output/Languages/`.
 
 ## Items, drop tables and loot
 

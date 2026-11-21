@@ -49,7 +49,11 @@ const TOOLS = [
   {id: 'items', title: 'Items & loot', description: 'Item catalogues, recipes, and drop tables.', icon: 'package', tone: 'rose', tags: ['JSON'], folder: 'output/'},
   {id: 'calendars', title: 'Daily calendars', description: 'Zenith, weather, and Gods and Ghosts.', icon: 'calendar', tone: 'green', tags: ['JSON'], folder: 'calendars'}
 ];
-const LOCALES = [['en', 'English'], ['fr', 'French'], ['de', 'German'], ['es', 'Spanish'], ['it', 'Italian'], ['pt', 'Portuguese'], ['ru', 'Russian'], ['pl', 'Polish'], ['tr', 'Turkish'], ['ja', 'Japanese'], ['ko', 'Korean'], ['zh', 'Chinese']];
+const LOCALES = [
+  ['en', 'English'], ['fr', 'French'], ['de', 'German'], ['es', 'Spanish'], ['it', 'Italian'],
+  ['pt', 'Brazilian Portuguese'], ['ru', 'Russian'], ['pl', 'Polish'], ['tr', 'Turkish'], ['ja', 'Japanese'],
+  ['ko', 'Korean'], ['zh', 'Simplified Chinese'], ['tc', 'Traditional Chinese'], ['th', 'Thai'], ['uk', 'Ukrainian']
+];
 const $ = (id) => document.getElementById(id);
 const icon = (name) => '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || ICONS.file) + '</svg>';
 const state = {

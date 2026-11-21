@@ -17,7 +17,7 @@ use crate::{
     TYPE_MANIFEST,
 };
 
-pub const DEFAULT_LOCALES: &str = "en,fr,de,es,it,pt,ru,pl,tr,ja,ko,zh";
+pub const DEFAULT_LOCALES: &str = "en,fr,de,es,it,pt,ru,pl,tr,ja,ko,zh,tc,th,uk";
 
 #[derive(Subcommand, Debug)]
 pub enum Cmd {

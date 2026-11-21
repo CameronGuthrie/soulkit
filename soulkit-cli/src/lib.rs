@@ -23,6 +23,7 @@
 
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
+pub use soulframe_languages::cli::DEFAULT_LOCALES;
 
 mod de_rng;
 mod epithets;
@@ -177,7 +178,7 @@ enum TopCmd {
     /// Run the complete extraction pipeline and generate both daily calendars.
     RunAll {
         /// Comma-separated locales for the language pipeline.
-        #[arg(long, default_value = soulframe_languages::cli::DEFAULT_LOCALES)]
+        #[arg(long, default_value = DEFAULT_LOCALES)]
         locales: String,
         /// Working directory for droptables outputs.
         #[arg(long, default_value = "output")]

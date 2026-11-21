@@ -29,7 +29,7 @@ class Node {
   get nextElementSibling() { return this.sibling ||= new Node(); }
 }
 const nodes = new Map(ids.map(id => [id, new Node()]));
-const locales = ['en', 'fr'].map(value => Object.assign(new Node(), {value, checked: true}));
+const localeOptions = nodes.get('locale-options').children;
 const environment = {cache: {found: false}, output_storage: {path: 'C:/output', available_bytes: 1024}, scratch_storage: {path: 'C:/work', available_bytes: 1024}};
 const initial = {workspace: 'C:/work', output: 'C:/output', soulkit: 'C:/soulkit.exe', cache_path: null, dll_directory: null, locales: 'en,fr', keep_intermediates: false};
 let failSave = false, savedRequests = [];
@@ -37,9 +37,10 @@ const context = {
   document: {
     documentElement: {dataset: {theme: 'dark'}},
     getElementById(id) { assert(nodes.has(id), 'Missing DOM ID ' + id); return nodes.get(id); },
+    addEventListener() {}, querySelector: () => new Node(),
     querySelectorAll(selector) {
-      if (selector === '#locale-options input') return locales;
-      if (selector === '#locale-options input:checked') return locales.filter(node => node.checked);
+      if (selector === '#locale-options input') return localeOptions.map(label => label.children[0]);
+      if (selector === '#locale-options input:checked') return localeOptions.map(label => label.children[0]).filter(node => node.checked);
       return [];
     },
     createElement: () => new Node(), createTextNode: text => ({textContent: text})
@@ -64,7 +65,7 @@ const source = fs.readFileSync(path.join(ui, 'app.js'), 'utf8').replace(/initial
 for (const match of source.matchAll(/\$\('([^']+)'\)/g)) {
   if (!match[1].endsWith('-')) assert(nodes.has(match[1]), 'Missing literal DOM ID ' + match[1]);
 }
-vm.runInContext(source + '\nthis.api = {state, fillSettings, hasUnsavedSettings, finishSettingsChoice, navigate, renderRun, guardWindowClose};', context);
+vm.runInContext(source + '\nwireEvents(); this.api = {state, fillSettings, hasUnsavedSettings, finishSettingsChoice, navigate, renderRun, guardWindowClose};', context);
 const api = context.api;
 const tick = () => new Promise(resolve => setImmediate(resolve));
 function edit() {
@@ -103,8 +104,14 @@ async function choose(promise, choice) {
   assert.equal(context.document.documentElement.dataset.theme, 'light', 'Discard must preserve the immediately saved theme');
 
   edit();
+  for (const [code, title] of [['tc', 'Traditional Chinese'], ['th', 'Thai'], ['uk', 'Ukrainian']]) {
+    const option = localeOptions.find(label => label.title === title);
+    assert.equal(option?.children[0].value, code, title);
+    option.children[0].checked = true;
+  }
   assert.equal(await choose(api.navigate('library'), 'save'), true);
   assert.equal(savedRequests.at(-1).output, 'D:/new output');
+  assert.equal(savedRequests.at(-1).locales, 'en,fr,tc,th,uk');
   assert.equal(api.state.page, 'library');
   assert.equal(api.hasUnsavedSettings(), false);
 
@@ -116,7 +123,7 @@ async function choose(promise, choice) {
   assert.equal(nodes.get('save-settings').disabled, false);
   failSave = false;
 
-  edit(); locales.forEach(node => { node.checked = false; });
+  edit(); localeOptions.forEach(label => { label.children[0].checked = false; });
   const savesBefore = savedRequests.length;
   assert.equal(await choose(api.navigate('extract'), 'save'), false);
   assert.equal(savedRequests.length, savesBefore, 'Invalid drafts must not be saved or discarded');

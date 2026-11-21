@@ -1,11 +1,14 @@
 use crate::runtime_libraries::{self, RuntimeLibraries};
 use crate::tasks::RunSettings;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use tauri::Manager;
 
 const MAX_SETTINGS_BYTES: u64 = 64 * 1024;
+const SETTINGS_VERSION: u32 = 2;
+const V1_DEFAULT_LOCALES: &str = "en,fr,de,es,it,pt,ru,pl,tr,ja,ko,zh";
 
 #[derive(Clone, Serialize)]
 pub struct BootInfo {
@@ -23,6 +26,23 @@ pub struct BootInfo {
 struct SavedSettings {
     version: u32,
     settings: RunSettings,
+}
+
+impl SavedSettings {
+    fn into_settings(mut self) -> Result<RunSettings, String> {
+        match self.version {
+            1 => {
+                let selected: BTreeSet<_> =
+                    self.settings.locales.split(',').map(str::trim).collect();
+                if selected == V1_DEFAULT_LOCALES.split(',').collect() {
+                    self.settings.locales = soulkit_cli::DEFAULT_LOCALES.into();
+                }
+            }
+            SETTINGS_VERSION => {}
+            _ => return Err("The saved settings version is not supported.".into()),
+        }
+        validate_settings(self.settings)
+    }
 }
 
 #[derive(Clone)]
@@ -54,10 +74,7 @@ impl ConfigStore {
                     let saved: SavedSettings =
                         serde_json::from_slice(&fs::read(path).map_err(|e| e.to_string())?)
                             .map_err(|e| e.to_string())?;
-                    if saved.version != 1 {
-                        return Err("The saved settings version is not supported.".into());
-                    }
-                    validate_settings(saved.settings)
+                    saved.into_settings()
                 })();
                 match result {
                     Ok(settings) => store.settings = settings,
@@ -108,7 +125,7 @@ impl ConfigStore {
             fs::create_dir_all(parent)
                 .map_err(|e| format!("Cannot create the settings folder: {e}"))?;
             let bytes = serde_json::to_vec_pretty(&SavedSettings {
-                version: 1,
+                version: SETTINGS_VERSION,
                 settings: settings.clone(),
             })
             .map_err(|e| e.to_string())?;
@@ -156,7 +173,7 @@ fn default_settings() -> RunSettings {
         soulkit,
         cache_path: None,
         dll_directory: None,
-        locales: "en,fr,de,es,it,pt,ru,pl,tr,ja,ko,zh".into(),
+        locales: soulkit_cli::DEFAULT_LOCALES.into(),
         keep_intermediates: false,
     }
 }
@@ -273,6 +290,33 @@ pub(crate) fn readable_path(path: PathBuf) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn saved_full_v1_selection_includes_new_languages_after_upgrade() {
+        let mut settings = default_settings();
+        settings.locales = V1_DEFAULT_LOCALES
+            .split(',')
+            .rev()
+            .collect::<Vec<_>>()
+            .join(", ");
+        let restored = SavedSettings {
+            version: 1,
+            settings,
+        }
+        .into_settings()
+        .unwrap();
+        assert_eq!(restored.locales, soulkit_cli::DEFAULT_LOCALES);
+    }
+
+    #[test]
+    fn saved_custom_language_selections_survive_reload() {
+        for (version, locales) in [(1, "en,fr"), (SETTINGS_VERSION, V1_DEFAULT_LOCALES)] {
+            let mut settings = default_settings();
+            settings.locales = locales.into();
+            let restored = SavedSettings { version, settings }.into_settings().unwrap();
+            assert_eq!(restored.locales, locales);
+        }
+    }
 
     #[test]
     fn settings_resolve_relative_outputs_without_creating_them() {
